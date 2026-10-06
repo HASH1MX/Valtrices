@@ -1,4 +1,5 @@
 import { HashRouter, Navigate, Route, Routes } from "react-router";
+import { StartupSplash } from "./components/StartupSplash";
 import { AppShell } from "./layout/AppShell";
 import { DashboardPage } from "./pages/DashboardPage";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -8,6 +9,7 @@ import { SettingsPage } from "./pages/SettingsPage";
 export default function App() {
   return (
     <HashRouter>
+      <StartupSplash />
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<DashboardPage />} />
