@@ -1,5 +1,4 @@
 use serde::Serialize;
-use tauri::Manager;
 
 /// Basic information about the running application, exposed to the UI over IPC.
 /// Mirrored by `AppInfo` in src/lib/tauri.ts.
