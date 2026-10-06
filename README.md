@@ -2,7 +2,7 @@
 
 Valtrices is a next-generation Valorant performance tracker built to turn match data into meaningful insights. From detailed match statistics and performance trends to custom performance scores and gameplay analysis, Valtrices helps players understand their strengths, identify weaknesses, and optimize their performance.
 
-> **Status:** foundation only. The desktop shell, navigation, and placeholder Dashboard and Settings pages exist. No match data, statistics, scoring, or analysis is implemented yet. Supabase is connected (client + health check only), with no tables yet.
+> **Status:** foundation only. The desktop shell builds into a Windows installer; navigation and placeholder Dashboard and Settings pages exist. No match data, statistics, scoring, or analysis is implemented yet. Supabase is connected (client + health check only), with no tables yet.
 
 ## Stack
 
@@ -45,6 +45,46 @@ pnpm tauri dev           # starts Vite on :1420 and opens the desktop window
 | `pnpm lint`        | ESLint                                               |
 | `pnpm format`      | Prettier (write)                                     |
 | `pnpm check`       | typecheck + lint + format check                      |
+
+## Install on Windows
+
+Download `Valtrices_<version>_x64-setup.exe` from the GitHub Releases page, run it, and launch
+Valtrices from the Start menu. The installer is per-user (no administrator rights) and installs
+the WebView2 runtime if the machine lacks it.
+
+The installer is not code-signed yet, so Windows SmartScreen shows "Windows protected your PC"
+on first run. Choose "More info" then "Run anyway".
+
+## Building the installer locally
+
+```bash
+pnpm tauri build
+```
+
+Outputs:
+
+- `src-tauri/target/release/valtrices.exe`: standalone executable
+- `src-tauri/target/release/bundle/nsis/Valtrices_<version>_x64-setup.exe`: installer
+
+## Releasing
+
+Releases are built by [.github/workflows/release.yml](.github/workflows/release.yml).
+
+1. Bump `version` in `package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml` (keep them equal).
+2. Commit, then tag and push the tag:
+
+   ```bash
+   git tag v0.1.0
+   git push origin v0.1.0
+   ```
+
+3. GitHub Actions builds the installer and publishes a release for the tag with the installer
+   attached. It appears on the Releases page as soon as the build finishes, usually within ten
+   minutes. A tag containing a hyphen, such as `v0.2.0-rc.1`, is published as a pre-release and
+   is not shown as "Latest".
+
+Running the workflow by hand ("Run workflow" button) builds the installer and attaches it to
+the workflow run as an artifact without creating a release.
 
 ## Project structure
 
