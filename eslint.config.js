@@ -20,4 +20,11 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Runtime-neutral Riot client and Node scripts: not browser code.
+    files: ["riot/**/*.ts", "scripts/**/*.ts"],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
 ]);

@@ -17,7 +17,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "riot:probe": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/riot-probe.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

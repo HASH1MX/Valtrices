@@ -27,3 +27,6 @@ Thumbs.db
 
 # Claude Code session config (local tooling, not part of the app)
 .claude/
+
+# Riot API probe output (raw responses, may contain player identifiers)
+riot-probe-output/
