@@ -20,6 +20,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
     "@tauri-apps/api": "^2.12.1",
     "lucide-react": "^1.52.0",
     "react": "^19.3.0",

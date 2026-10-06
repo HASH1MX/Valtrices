@@ -2,7 +2,7 @@
 
 Valtrices is a next-generation Valorant performance tracker built to turn match data into meaningful insights. From detailed match statistics and performance trends to custom performance scores and gameplay analysis, Valtrices helps players understand their strengths, identify weaknesses, and optimize their performance.
 
-> **Status:** foundation only. The desktop shell, navigation, and placeholder Dashboard and Settings pages exist. No match data, statistics, scoring, or analysis is implemented yet, and Supabase is not connected.
+> **Status:** foundation only. The desktop shell, navigation, and placeholder Dashboard and Settings pages exist. No match data, statistics, scoring, or analysis is implemented yet. Supabase is connected (client + health check only), with no tables yet.
 
 ## Stack
 
@@ -13,7 +13,7 @@ Valtrices is a next-generation Valorant performance tracker built to turn match 
 | Styling | Tailwind CSS 4                           |
 | Routing | React Router 7 (hash-based, in-app only) |
 | Icons   | lucide-react                             |
-| Backend | Supabase (PostgreSQL), to be connected   |
+| Backend | Supabase (PostgreSQL) via supabase-js    |
 | Tooling | pnpm, ESLint (flat config), Prettier     |
 
 ## Prerequisites (Windows)
@@ -29,7 +29,7 @@ Full list: <https://tauri.app/start/prerequisites/>. Run `pnpm tauri info` to ch
 
 ```bash
 pnpm install
-copy .env.example .env   # fill in values once Supabase is connected
+copy .env.example .env   # then fill in your Supabase project URL and publishable key
 pnpm tauri dev           # starts Vite on :1420 and opens the desktop window
 ```
 
@@ -59,7 +59,10 @@ pnpm tauri dev           # starts Vite on :1420 and opens the desktop window
 │   ├── layout/                # AppShell, Sidebar
 │   ├── pages/                 # DashboardPage, SettingsPage
 │   ├── components/            # Small reusable UI pieces
-│   └── lib/                   # Non-UI helpers (Tauri bridge, env checks)
+│   ├── hooks/                 # React hooks (e.g. Supabase health)
+│   └── lib/                   # Non-UI helpers (Tauri bridge, Supabase client)
+├── supabase/
+│   └── migrations/            # Versioned SQL migrations (none yet)
 └── src-tauri/                 # Rust / Tauri
     ├── tauri.conf.json        # Window, bundle, build config
     ├── capabilities/          # Permission grants per window
@@ -72,3 +75,11 @@ pnpm tauri dev           # starts Vite on :1420 and opens the desktop window
 Copy `.env.example` to `.env`. Vite compiles `VITE_*` variables into the frontend bundle at build time, so only values that are safe to ship inside a desktop app belong there: the Supabase project URL and the publishable (or legacy anon) key, both of which are designed to be public and are protected by Row Level Security.
 
 **Never** place the Supabase `service_role` / secret key in `.env`, in source, or anywhere in the app. `.env` is git-ignored.
+
+## Supabase
+
+- [src/lib/supabase.ts](src/lib/supabase.ts) is the only place the client is created. It reads the two `VITE_` variables and exports `null` when they are missing, so the UI shows "Not configured" instead of crashing.
+- The Settings page runs a reachability check against the project's auth service (`/auth/v1/health`) using the publishable key. It touches no tables.
+- All database access from the app goes through supabase-js with the publishable key and Row Level Security. Nothing with elevated rights runs in the client.
+- Schema changes go in [supabase/migrations](supabase/migrations) as SQL files. See [supabase/README.md](supabase/README.md). None exist yet.
+- The Content Security Policy in [src-tauri/tauri.conf.json](src-tauri/tauri.conf.json) pins `connect-src` to this project's host. If `.env` is pointed at a different project, update the CSP as well.

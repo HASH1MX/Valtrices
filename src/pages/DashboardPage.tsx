@@ -1,7 +1,8 @@
 import { Card } from "../components/Card";
 import { PageHeader } from "../components/PageHeader";
 import { StatusPill } from "../components/StatusPill";
-import { supabaseEnvStatus } from "../lib/env";
+import { SupabaseStatusPill } from "../components/SupabaseStatusPill";
+import { useSupabaseHealth } from "../hooks/useSupabaseHealth";
 import { runningInTauri } from "../lib/tauri";
 
 const PLACEHOLDER_STATS = [
@@ -12,6 +13,8 @@ const PLACEHOLDER_STATS = [
 ];
 
 export function DashboardPage() {
+  const health = useSupabaseHealth();
+
   return (
     <>
       <PageHeader
@@ -56,9 +59,7 @@ export function DashboardPage() {
             </li>
             <li className="flex items-center justify-between gap-4">
               <span>Supabase</span>
-              <StatusPill tone={supabaseEnvStatus.configured ? "positive" : "warning"}>
-                {supabaseEnvStatus.configured ? "Env configured" : "Not configured"}
-              </StatusPill>
+              <SupabaseStatusPill health={health} />
             </li>
           </ul>
         </Card>

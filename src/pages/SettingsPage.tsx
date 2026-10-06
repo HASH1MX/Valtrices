@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
+import { Button } from "../components/Button";
 import { Card } from "../components/Card";
 import { DefinitionList } from "../components/DefinitionList";
 import { PageHeader } from "../components/PageHeader";
-import { StatusPill } from "../components/StatusPill";
-import { supabaseEnvStatus } from "../lib/env";
+import { SupabaseStatusPill } from "../components/SupabaseStatusPill";
+import { useSupabaseHealth } from "../hooks/useSupabaseHealth";
+import { isSupabaseConfigured, supabaseHost } from "../lib/supabase";
 import { getAppInfo, runningInTauri, type AppInfo } from "../lib/tauri";
 
 export function SettingsPage() {
   const [info, setInfo] = useState<AppInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const health = useSupabaseHealth();
+  const last = health.last;
 
   useEffect(() => {
     let cancelled = false;
@@ -58,25 +62,36 @@ export function SettingsPage() {
 
         <Card
           title="Supabase"
-          description="Connection settings are read from environment variables at build time. Values are never displayed."
+          description="Reachability of the configured project, checked against its auth service with the publishable key."
         >
-          <DefinitionList
-            rows={[
-              [
-                "Status",
-                <StatusPill tone={supabaseEnvStatus.configured ? "positive" : "warning"}>
-                  {supabaseEnvStatus.configured ? "Configured" : "Not configured"}
-                </StatusPill>,
-              ],
-              ["VITE_SUPABASE_URL", supabaseEnvStatus.hasUrl ? "set" : "missing"],
-              ["VITE_SUPABASE_PUBLISHABLE_KEY", supabaseEnvStatus.hasKey ? "set" : "missing"],
-            ]}
-          />
-          <p className="mt-4 text-xs text-fg-faint">
-            Copy <code className="font-mono">.env.example</code> to{" "}
-            <code className="font-mono">.env</code> and fill in the values from your Supabase
-            project. The service_role key must never be used in this app.
-          </p>
+          {!isSupabaseConfigured ? (
+            <p className="text-sm text-fg-muted">
+              Not configured. Copy <code className="font-mono">.env.example</code> to{" "}
+              <code className="font-mono">.env</code>, fill in the project URL and publishable key,
+              then restart the dev server.
+            </p>
+          ) : (
+            <>
+              <DefinitionList
+                rows={[
+                  ["Status", <SupabaseStatusPill health={health} />],
+                  ["Project", supabaseHost ?? "unknown"],
+                  ["Auth service", last?.ok ? last.version : "n/a"],
+                  ["Latency", last?.ok ? `${last.latencyMs} ms` : "n/a"],
+                  ["Last checked", last ? last.checkedAt.toLocaleTimeString() : "never"],
+                ]}
+              />
+              {last && !last.ok && <p className="mt-3 text-xs text-warning">{last.error}</p>}
+              <div className="mt-4 flex items-center justify-between gap-4">
+                <p className="text-xs text-fg-faint">
+                  The service_role key must never be used in this app.
+                </p>
+                <Button onClick={() => void health.recheck()} disabled={health.checking}>
+                  {health.checking ? "Checking\u2026" : "Re-check"}
+                </Button>
+              </div>
+            </>
+          )}
         </Card>
 
         <Card title="Appearance" description="Only the dark theme exists right now.">
